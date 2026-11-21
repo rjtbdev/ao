@@ -1,0 +1,37 @@
+# Build artifacts
+*.obj
+*.exe
+*.efi
+*.lib
+*.pdb
+*.ilk
+*.log
+build.log
+build_hook.log
+build_sc.log
+
+# EDK2 build tree
+Build/
+Conf/
+
+# Harness output
+artifacts/*
+!artifacts/.gitkeep
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Backup files from migrations / aborted edits
+*.bak
+*.bak_*
+
+# Scratch
+*.hex
+scratchpad/
+
+# IDE
+.vscode/
+.vs/
+.idea/
+*.swp

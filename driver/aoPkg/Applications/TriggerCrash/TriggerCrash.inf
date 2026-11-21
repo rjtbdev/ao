@@ -1,0 +1,19 @@
+[Defines]
+  INF_VERSION                    = 1.27
+  BASE_NAME                      = TriggerCrash
+  FILE_GUID                      = A3F7C2D1-8E45-4B09-9F61-2C5A8B3E7D04
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UefiMain
+
+[Sources]
+  TriggerCrash.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  BaseLib
+  IoLib

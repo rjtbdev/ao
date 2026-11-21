@@ -1,0 +1,5 @@
+[Defines]
+  DEC_SPECIFICATION              = 1.27
+  PACKAGE_NAME                   = aoPkg
+  PACKAGE_GUID                   = e655342b-ae99-45cd-89bf-49a248c40b70
+  PACKAGE_VERSION                = 1.00
