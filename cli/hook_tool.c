@@ -426,6 +426,44 @@ static int do_sigscan_all(int argc, char** argv)
     return hits > 0 ? 0 : 2;
 }
 
+// Write a per-hook CFG slot. Quick path for scripts that want to toggle
+// CFG from the command line without linking a C binding.
+//   set_cfg <slot> <cfg_idx> <value_hex_or_dec>
+static int do_set_cfg(int argc, char** argv)
+{
+    if (argc < 5) {
+        fprintf(stderr, "usage: set_cfg <slot> <cfg_idx> <value>\n");
+        return 1;
+    }
+    uint32_t slot = (uint32_t)strtoul(argv[2], NULL, 0);
+    uint32_t cfg  = (uint32_t)strtoul(argv[3], NULL, 0);
+    uint32_t val  = (uint32_t)strtoul(argv[4], NULL, 0);
+    uint64_t rc = ao_ph_set_cfg(slot, cfg, val);
+    if ((int64_t)rc < 0) {
+        fprintf(stderr, "set_cfg rc=%lld\n", (long long)(int64_t)rc);
+        return 1;
+    }
+    return 0;
+}
+
+// Read a per-hook CFG slot. Prints "CFG[slot][cfg]=0x<hex>".
+static int do_get_cfg(int argc, char** argv)
+{
+    if (argc < 4) {
+        fprintf(stderr, "usage: get_cfg <slot> <cfg_idx>\n");
+        return 1;
+    }
+    uint32_t slot = (uint32_t)strtoul(argv[2], NULL, 0);
+    uint32_t cfg  = (uint32_t)strtoul(argv[3], NULL, 0);
+    uint64_t rc = ao_ph_get_cfg(slot, cfg);
+    if (rc == AO_NOT_PRESENT) {
+        fprintf(stderr, "get_cfg: error (slot/cfg out of range or hooks uninit)\n");
+        return 1;
+    }
+    printf("CFG[%u][%u]=0x%08X\n", slot, cfg, (uint32_t)rc);
+    return 0;
+}
+
 // One-shot: resolve CR3 for <process>, read <size> bytes at <va>, print hex.
 // Output format is one line: "VA=0x... SIZE=... HEX=aabbccdd..." so Python
 // shelling out can parse trivially.
@@ -714,6 +752,8 @@ int main(int argc, char** argv)
             "  hook_tool install <process> <va_hex> <recipe> [args]\n"
             "  hook_tool read <process> <va_hex> <size>\n"
             "  hook_tool watch <process> <va_hex> <size> [interval_ms=50] [duration_s=60]\n"
+            "  hook_tool set_cfg <slot> <cfg_idx> <value>\n"
+            "  hook_tool get_cfg <slot> <cfg_idx>\n"
             "  hook_tool sigscan <process> <module> <hex_pattern> <mask> [scan_mb=16]\n"
             "  hook_tool sigscan_all <process> <module> <hex_pattern> <mask> [scan_mb=16] [max_hits=32]\n"
             "  hook_tool install_sig <process> <module> <hex_pattern> <mask> <offset_hex> <scan_mb> <recipe> [args]\n"
@@ -732,6 +772,8 @@ int main(int argc, char** argv)
     if (strcmp(argv[1], "install") == 0)        return do_install(argc, argv);
     if (strcmp(argv[1], "read") == 0)           return do_read(argc, argv);
     if (strcmp(argv[1], "watch") == 0)          return do_watch(argc, argv);
+    if (strcmp(argv[1], "set_cfg") == 0)        return do_set_cfg(argc, argv);
+    if (strcmp(argv[1], "get_cfg") == 0)        return do_get_cfg(argc, argv);
     if (strcmp(argv[1], "sigscan") == 0)        return do_sigscan(argc, argv);
     if (strcmp(argv[1], "sigscan_all") == 0)    return do_sigscan_all(argc, argv);
     if (strcmp(argv[1], "install_sig") == 0)    return do_install_sig(argc, argv);
