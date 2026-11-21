@@ -251,6 +251,7 @@ ao_syscall_log_read(ao_syscall_entry *buf, uint32_t max_count)
 #define AO_CMD_PH_LOG_READ      43
 #define AO_CMD_PH_CLEAR         44
 #define AO_CMD_PH_SET_CFG       49
+#define AO_CMD_PH_GET_CFG       50
 
 // Diagnostic hypercalls for the process-hook NPT path.
 #define AO_CMD_PH_DIAG_WALK     45  // walk active NCr3 for a (cr3, va); return 4 PTEs
@@ -477,6 +478,17 @@ ao_ph_set_cfg(uint32_t slot, uint32_t cfg_idx, uint32_t value)
     return AO_HYPERCALL(AO_CMD_PH_SET_CFG,
                              (uint64_t)slot, (uint64_t)cfg_idx,
                              (uint64_t)value, 0);
+}
+
+// Read a per-hook config slot. Returns the UINT32 value on success, or
+// (uint64_t)-1 on error (hooks not initialized or slot/cfg out of range).
+// NOTE: callers that need to distinguish "value 0xFFFFFFFF" from "error"
+// should compare against AO_NOT_PRESENT (= (uint64_t)-1).
+static inline uint64_t
+ao_ph_get_cfg(uint32_t slot, uint32_t cfg_idx)
+{
+    return AO_HYPERCALL(AO_CMD_PH_GET_CFG,
+                             (uint64_t)slot, (uint64_t)cfg_idx, 0, 0);
 }
 
 // Returns bytes written on success (340), -1 on error.

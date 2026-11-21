@@ -1163,6 +1163,7 @@ HandleMsr (
 #define AO_CMD_PH_DIAG_HOOKMETA         47UL  // dump SHARED_SVM_DATA.HookMeta.Hooks[]
 #define AO_CMD_PH_DIAG_COUNTERS         48UL  // dump fine-grained NPF/dispatch counters
 #define AO_CMD_PH_SET_CFG               49UL  // write a PH_CFG slot: RCX=slot_idx, RDX=cfg_idx, R8=value
+#define AO_CMD_PH_GET_CFG               50UL  // read  a PH_CFG slot: RCX=slot_idx, RDX=cfg_idx ; RAX = value or -1
 
 //
 // #UD channel diagnostics — read via ReadScratch (ext CMOS 0x80-0x84).
@@ -2178,6 +2179,23 @@ HandleUdHypercall (
         { Context->Cpu->States.Guest.Registers->Rax = (UINT64)-1; break; }
         g_ProcessHooks->Entries[slot].Config[cfg] = (UINT32)val;
         Context->Cpu->States.Guest.Registers->Rax = 0;
+        break;
+    }
+
+    case AO_CMD_PH_GET_CFG:
+    {
+        // Mirror of AO_CMD_PH_SET_CFG.
+        //   RCX = slot_idx, RDX = cfg_idx.
+        // Returns the UINT32 cfg value in RAX. Returns (UINT64)-1 on error
+        // (hooks not initialized or slot/cfg out of range).
+        UINT64 slot = Context->Cpu->States.Guest.Registers->Rcx;
+        UINT64 cfg  = Context->Cpu->States.Guest.Registers->Rdx;
+        if (g_ProcessHooks == NULL ||
+            slot >= PROCESS_HOOK_MAX ||
+            cfg  >= PROCESS_HOOK_CFG_SLOTS)
+        { Context->Cpu->States.Guest.Registers->Rax = (UINT64)-1; break; }
+        Context->Cpu->States.Guest.Registers->Rax =
+            (UINT64)g_ProcessHooks->Entries[slot].Config[cfg];
         break;
     }
 

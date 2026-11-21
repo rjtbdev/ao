@@ -433,7 +433,7 @@ static int do_read(int argc, char** argv)
 {
     if (argc < 5) {
         fprintf(stderr, "usage: read <process> <va_hex> <size>\n");
-        fprintf(stderr, "  <process>  e.g. osu!.exe\n");
+        fprintf(stderr, "  <process>  target .exe name\n");
         fprintf(stderr, "  <va_hex>   e.g. 0x02B367A5 or 02B367A5\n");
         fprintf(stderr, "  <size>     decimal, 1..4096\n");
         return 1;
